@@ -1,0 +1,44 @@
+﻿
+SELECT PHARMACY_CODE , AVG(QUANTITY)    FROM STOCK GROUP BY PHARMACY_CODE;
+
+SELECT E.PHARMACY_CODE,E."NAME", E.LASTNAME FROM EMPLOYEE E INNER JOIN SHIFT S ON E.SHIFT_CODE=S.CODE WHERE S.NAME='Morning';
+
+select DISTINCT ORDER_DATE, DISTRIBUTOR_CIF, MEDICINE_CODE, QUANTITY
+FROM "ORDER" , (SELECT PHARMACY_CODE, COUNT(PHARMACY_CODE) FROM "ORDER" GROUP BY PHARMACY_CODE) 
+order by ORDER_DATE;
+
+select PHARMACY_CODE, count(*) as Total_Orders from "ORDER" 
+where order_date between to_date('05/01/22', 'mm-dd-yy') AND to_date('06/01/22', 'mm-dd-yy') GROUP BY PHARMACY_CODE;
+
+
+
+CREATE SEQUENCE seq_admin_ID;
+select seq_admin_ID.nextval from dual;
+CREATE OR REPLACE TRIGGER increase_ID_CODE
+before insert on TYPE_ADMINISTRATION 
+for each row
+BEGIN
+select seq_admin_ID.nextval into :new.code from dual;
+end;
+/
+
+CREATE SEQUENCE seq_medID;
+Select seq_medID.nextval from dual;
+CREATE OR REPLACE TRIGGER increase_medID
+Before insert on MEDICINE
+For each row
+BEGIN
+Select seq_medID.nextval into :new.code from dual;
+End;
+/
+CREATE OR REPLACE TRIGGER ORDER_MEDS
+AFTER UPDATE OF PHARMACY_CODE, MEDICINE_CODE ,QUANTITY ON STOCK 
+FOR EACH ROW
+WHEN (new.quantity < 3)
+BEGIN
+INSERT INTO "ORDER" (PHARMACY_CODE, MEDICINE_CODE, DISTRIBUTOR_CIF, ORDER_DATE, QUANTITY)
+VALUES (PHARMACY_CODE, MEDICINE_CODE, 4, getdate() , 100);
+END;
+/
+
+
